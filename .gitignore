@@ -1,0 +1,6 @@
+mermaidcli/node_modules/
+vendor/
+in/
+out/
+.DS_Store
+.idea/
