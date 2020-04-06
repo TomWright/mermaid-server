@@ -23,3 +23,6 @@ curl --location --request POST 'http://localhost:80/generate' \
     C-->F
 '
 ```
+
+Inline-style: 
+![Example request in Postman](example.png "Example request in Postman")
