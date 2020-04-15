@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -30,6 +31,8 @@ func writeSVG(rw http.ResponseWriter, data []byte, status int) {
 }
 
 func writeErr(rw http.ResponseWriter, err error, status int) {
+	log.Printf("[%d] %s", status, err)
+
 	writeJSON(rw, map[string]interface{}{
 		"error": err,
 	}, status)

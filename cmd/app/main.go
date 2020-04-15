@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/tomwright/mermaid-server/internal"
+	"log"
 	"net/http"
 	"os"
 )
@@ -59,6 +60,7 @@ func main() {
 	mermaid := flag.String("mermaid", "", "The full path to the mermaidcli executable.")
 	in := flag.String("in", "", "Directory to store input files.")
 	out := flag.String("out", "", "Directory to store output files.")
+	puppeteer := flag.String("puppeteer", "", "Full path to optional puppeteer config.")
 	flag.Parse()
 
 	if *mermaid == "" {
@@ -77,7 +79,7 @@ func main() {
 	}
 
 	cache := internal.NewDiagramCache()
-	generator := internal.NewGenerator(cache, *mermaid, *in, *out)
+	generator := internal.NewGenerator(cache, *mermaid, *in, *out, *puppeteer)
 
 	httpHandler := internal.GenerateHTTPHandler(generator)
 
@@ -88,11 +90,11 @@ func main() {
 		Addr:    ":80",
 		Handler: r,
 	}
-	_, _ = fmt.Fprintf(os.Stdout, "Listening on address %s", httpServer.Addr)
+	log.Printf("Listening on address %s", httpServer.Addr)
 	if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		_, _ = fmt.Fprintf(os.Stderr, "Could not listen for http connections: %s", err)
+		log.Printf("Could not listen for http connections: %s", err)
 		os.Exit(1)
 	}
 
-	_, _ = fmt.Fprintf(os.Stdout, "Shutdown")
+	log.Printf("Shutdown")
 }

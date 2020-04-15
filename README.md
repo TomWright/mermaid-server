@@ -6,6 +6,15 @@ While this currently serves the diagrams via HTTP, it could easily be manipulate
 
 ## Basic usage
 
+### Docker
+
+Run the container:
+```
+docker run -d --name mermaid-server -p 80:80 tomwright/mermaid-server:latest
+```
+
+### Manually as a go command
+
 Start the HTTP server:
 ```
 go run cmd/app/main.go --mermaid=./mermaidcli/node_modules/.bin/mmdc --in=./in --out=./out

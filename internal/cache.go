@@ -1,5 +1,7 @@
 package internal
 
+import "fmt"
+
 // DiagramCache provides the ability to cache diagram results.
 type DiagramCache interface {
 	// Store stores a diagram in the cache.
@@ -26,7 +28,7 @@ type inMemoryDiagramCache struct {
 func (c *inMemoryDiagramCache) Store(diagram *Diagram) error {
 	id, err := diagram.ID()
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot get diagram ID: %w", err)
 	}
 	c.idToDiagram[id] = diagram
 	return nil
@@ -36,7 +38,7 @@ func (c *inMemoryDiagramCache) Store(diagram *Diagram) error {
 func (c *inMemoryDiagramCache) Has(diagram *Diagram) (bool, error) {
 	id, err := diagram.ID()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("cannot get diagram ID: %w", err)
 	}
 	if d, ok := c.idToDiagram[id]; ok && d != nil {
 		return true, nil
