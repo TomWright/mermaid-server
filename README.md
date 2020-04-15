@@ -38,5 +38,4 @@ Or send CURL request to generate a diagram via `GET`... send in url encoded data
 curl --location --request GET 'http://localhost:80/generate?data=graph%20LR%0A%0A%20%20%20%20A--%3EB%0A%20%20%20%20B--%3EC%0A%20%20%20%20C--%3ED%0A%20%20%20%20C--%3EF%0A'
 ```
 
-Inline-style: 
 ![Example request in Postman](example.png "Example request in Postman")
