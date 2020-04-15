@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"mermaid-server/internal"
+	"github.com/tomwright/mermaid-server/internal"
 	"net/http"
 	"os"
 )
