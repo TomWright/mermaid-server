@@ -8,14 +8,18 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 )
 
 // Generator provides the ability to generate a diagram.
 type Generator interface {
 	// Generate generates the given diagram.
 	Generate(diagram *Diagram) error
+	// CleanUp removes any diagrams that haven't used within the given duration.
+	CleanUp(duration time.Duration) error
 }
 
+// NewGenerator returns a generator that can be used to generate diagrams.
 func NewGenerator(cache DiagramCache, mermaidCLIPath string, inPath string, outPath string, puppeteerConfigPath string) Generator {
 	return &cachingGenerator{
 		cache:               cache,
@@ -100,5 +104,11 @@ func (c cachingGenerator) generate(diagram *Diagram) error {
 
 	diagram.Output = outPath
 
+	return nil
+}
+
+// CleanUp removes any diagrams that haven't used within the given duration.
+func (c cachingGenerator) CleanUp(duration time.Duration) error {
+	// todo : loop through all cached diagrams and delete any that haven't been used within duration.
 	return nil
 }
