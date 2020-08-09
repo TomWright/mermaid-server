@@ -16,7 +16,7 @@ jobs:
       - name: Set env
         run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF:10}
       - name: Build
-        run: docker build
+        run: docker build \
           -t tomwright/mermaid-server:latest \
           -t tomwright/mermaid-server:${{ env.RELEASE_VERSION }} \
           -f Dockerfile .
