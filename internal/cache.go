@@ -10,6 +10,10 @@ type DiagramCache interface {
 	Has(diagram *Diagram) (bool, error)
 	// Get returns a cached version of the given diagram description.
 	Get(diagram *Diagram) (*Diagram, error)
+	// GetAll returns all of the cached diagrams.
+	GetAll() ([]*Diagram, error)
+	// Delete deletes a cached version of the given diagram.
+	Delete(diagram *Diagram) error
 }
 
 // NewDiagramCache returns an implementation of DiagramCache.
@@ -56,4 +60,28 @@ func (c *inMemoryDiagramCache) Get(diagram *Diagram) (*Diagram, error) {
 		return d, nil
 	}
 	return nil, nil
+}
+
+// GetAll returns all of the cached diagrams.
+func (c *inMemoryDiagramCache) GetAll() ([]*Diagram, error) {
+	res := make([]*Diagram, len(c.idToDiagram))
+	i := 0
+	for _, diagram := range c.idToDiagram {
+		res[i] = diagram
+		i++
+	}
+	return res, nil
+}
+
+// Delete deletes a cached version of the given diagram.
+func (c *inMemoryDiagramCache) Delete(diagram *Diagram) error {
+	id, err := diagram.ID()
+	if err != nil {
+		return err
+	}
+	if _, ok := c.idToDiagram[id]; ok {
+		delete(c.idToDiagram, id)
+		return nil
+	}
+	return nil
 }

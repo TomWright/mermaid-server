@@ -5,22 +5,45 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"strings"
+	"sync"
+	"time"
 )
 
 // NewDiagram returns a new diagram.
 func NewDiagram(description []byte) *Diagram {
 	return &Diagram{
 		description: []byte(strings.TrimSpace(string(description))),
+		lastTouched: time.Now(),
+		mu:          &sync.RWMutex{},
 	}
 }
 
+// Diagram represents a single diagram.
 type Diagram struct {
-	// iD is the ID of the Diagram
+	// id is the ID of the Diagram
 	id string
 	// description is the description of the diagram.
 	description []byte
 	// Output is the filepath to the output file.
 	Output string
+	// mu is a mutex to protect the last touched value.
+	mu *sync.RWMutex
+	// lastTouched is the time that the diagram was last used.
+	lastTouched time.Time
+}
+
+// Touch updates the last touched time of the diagram.
+func (d *Diagram) Touch() {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.lastTouched = time.Now()
+}
+
+// TouchedInDuration returns true if the diagram has been touched in the given duration.
+func (d *Diagram) TouchedInDuration(duration time.Duration) bool {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	return time.Now().Add(-duration).Before(d.lastTouched)
 }
 
 // ID returns an ID for the diagram.
