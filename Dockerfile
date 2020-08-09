@@ -20,8 +20,8 @@ COPY ./mermaidcli/* ./
 RUN npm install
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update 2>/dev/null && \
-	apt install -y --no-install-recommends \
+RUN apt-get update 2>/dev/null && \
+	apt-get install -y --no-install-recommends \
 		ca-certificates \
 		gconf-service \
         libasound2 \
@@ -55,6 +55,8 @@ RUN apt update 2>/dev/null && \
         libxrender1 \
         libxss1 \
         libxtst6 \
+        libxcb-dri3-0 \
+        libgbm1 \
         ca-certificates \
         fonts-liberation \
         libappindicator1 \
