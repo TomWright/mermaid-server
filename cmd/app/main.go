@@ -1,60 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"github.com/tomwright/lifetime"
 	"github.com/tomwright/mermaid-server/internal"
-	"log"
-	"net/http"
 	"os"
 )
-
-var testInput = []byte(`
-graph TB
-
-    subgraph "Jira"
-        createTicket["Create ticket"]
-        updateTicket["Update ticket"]
-        fireWebhook["Fire webhook"]
-
-        createTicket-->fireWebhook
-        updateTicket-->fireWebhook
-    end
-
-    subgraph "Jira Webhook"
-        receiveWebhook["Receive webhook"]
-        storeEvent["Store event in immutable list"]
-        publishNewStoredEventEvent["Publish message to notify system of new event"]
-
-        createEvent["Create internal event that will be stored"]
-        setCreatedAt["Set created at date to now"]
-        setSourceJira["Set source to Jira webhook"]
-
-        receiveWebhook-->createEvent-->setCreatedAt-->setSourceJira-->storeEvent
-        storeEvent-->publishNewStoredEventEvent
-    end
-
-    fireWebhook-->receiveWebhook
-
-    subgraph "Play Event"
-        publishEventUpdated["Publish message to notify system of new status"]
-
-        verifyEventSource["Verify event source"]
-        parsePayload["Parse event payload using source to determine structure"]
-        findEventHandler["Find the handler for the specific event type + version"]
-        getLatestPersistedState["Get latest persisted state"]
-        changeInMemoryStateUsingEventData["Change in-memory state using event data"]
-        persistUpdatedState["Persist updated state"]
-
-        verifyEventSource-->parsePayload
-        parsePayload-->findEventHandler
-        findEventHandler-->getLatestPersistedState-->changeInMemoryStateUsingEventData-->persistUpdatedState
-
-        persistUpdatedState-->publishEventUpdated
-    end
-
-    publishNewStoredEventEvent-->verifyEventSource
-`)
 
 func main() {
 	mermaid := flag.String("mermaid", "", "The full path to the mermaidcli executable.")
@@ -81,20 +34,16 @@ func main() {
 	cache := internal.NewDiagramCache()
 	generator := internal.NewGenerator(cache, *mermaid, *in, *out, *puppeteer)
 
-	httpHandler := internal.GenerateHTTPHandler(generator)
+	httpService := internal.NewHTTPService(generator)
+	cleanupService := internal.NewCleanupService(generator)
 
-	r := http.NewServeMux()
-	r.Handle("/generate", http.HandlerFunc(httpHandler))
+	lt := lifetime.New(context.Background()).Init()
 
-	httpServer := &http.Server{
-		Addr:    ":80",
-		Handler: r,
-	}
-	log.Printf("Listening on address %s", httpServer.Addr)
-	if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Printf("Could not listen for http connections: %s", err)
-		os.Exit(1)
-	}
+	// Start the http service.
+	lt.Start(httpService)
+	// Start the cleanup service.
+	lt.Start(cleanupService)
 
-	log.Printf("Shutdown")
+	// Wait for all routines to stop running.
+	lt.Wait()
 }

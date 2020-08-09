@@ -80,8 +80,8 @@ func getDiagramFromPOST(rw http.ResponseWriter, r *http.Request) *Diagram {
 	return d
 }
 
-// GenerateHTTPHandler returns a HTTP handler used to generate a diagram.
-func GenerateHTTPHandler(generator Generator) func(rw http.ResponseWriter, r *http.Request) {
+// generateHTTPHandler returns a HTTP handler used to generate a diagram.
+func generateHTTPHandler(generator Generator) func(rw http.ResponseWriter, r *http.Request) {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		var diagram *Diagram
 
