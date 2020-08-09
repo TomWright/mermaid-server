@@ -109,7 +109,7 @@ func (c cachingGenerator) generate(diagram *Diagram) error {
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed when executing mermaid: %w: %s: %s", err, string(stdOut.Bytes()), string(stdErr.Bytes()))
 	}
-	log.Printf("generated with output: %s: %s", string(stdOut.Bytes()), string(stdErr.Bytes()))
+	log.Printf("Generated: %s: %s: %s", id, string(stdOut.Bytes()), string(stdErr.Bytes()))
 
 	diagram.Output = outPath
 
@@ -118,6 +118,7 @@ func (c cachingGenerator) generate(diagram *Diagram) error {
 
 // CleanUp removes any diagrams that haven't used within the given duration.
 func (c cachingGenerator) CleanUp(duration time.Duration) error {
+	log.Printf("Running cleanup")
 	diagrams, err := c.cache.GetAll()
 	if err != nil {
 		return fmt.Errorf("could not get cached diagrams: %w", err)
@@ -138,6 +139,9 @@ func (c cachingGenerator) delete(diagram *Diagram) error {
 	if err != nil {
 		return fmt.Errorf("cannot get diagram ID: %w", err)
 	}
+
+	log.Printf("Cleaning up diagram: %s", id)
+
 	inPath := fmt.Sprintf("%s/%s.mmd", c.inPath, id)
 	outPath := fmt.Sprintf("%s/%s.svg", c.outPath, id)
 
