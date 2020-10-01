@@ -10,11 +10,12 @@ import (
 )
 
 // NewDiagram returns a new diagram.
-func NewDiagram(description []byte) *Diagram {
+func NewDiagram(description []byte, imgType string) *Diagram {
 	return &Diagram{
 		description: []byte(strings.TrimSpace(string(description))),
 		lastTouched: time.Now(),
 		mu:          &sync.RWMutex{},
+		imgType:     imgType,
 	}
 }
 
@@ -30,6 +31,8 @@ type Diagram struct {
 	mu *sync.RWMutex
 	// lastTouched is the time that the diagram was last used.
 	lastTouched time.Time
+	// the type of image to generate svg or png
+	imgType string
 }
 
 // Touch updates the last touched time of the diagram.
@@ -55,7 +58,7 @@ func (d *Diagram) ID() (string, error) {
 
 	encoded := base64.StdEncoding.EncodeToString(d.description)
 	hash := md5.Sum([]byte(encoded))
-	d.id = hex.EncodeToString(hash[:])
+	d.id = hex.EncodeToString(hash[:]) + d.imgType
 
 	return d.id, nil
 }

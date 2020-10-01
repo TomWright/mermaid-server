@@ -22,8 +22,12 @@ func writeJSON(rw http.ResponseWriter, value interface{}, status int) {
 	}
 }
 
-func writeSVG(rw http.ResponseWriter, data []byte, status int) {
-	rw.Header().Set("Content-Type", "image/svg+xml")
+func writeImage(rw http.ResponseWriter, data []byte, status int, imgType string) {
+	if imgType == "png" {
+		rw.Header().Set("Content-Type", "image/png")
+	} else {
+		rw.Header().Set("Content-Type", "image/svg+xml")
+	}
 	rw.WriteHeader(status)
 	if _, err := rw.Write(data); err != nil {
 		panic("could not write bytes to response: " + err.Error())
@@ -41,7 +45,7 @@ func writeErr(rw http.ResponseWriter, err error, status int) {
 // URLParam is the URL parameter getDiagramFromGET uses to look for data.
 const URLParam = "data"
 
-func getDiagramFromGET(rw http.ResponseWriter, r *http.Request) *Diagram {
+func getDiagramFromGET(rw http.ResponseWriter, r *http.Request, imgType string) *Diagram {
 	if r.Method != http.MethodGet {
 		writeErr(rw, fmt.Errorf("expected HTTP method GET"), http.StatusBadRequest)
 		return nil
@@ -59,11 +63,11 @@ func getDiagramFromGET(rw http.ResponseWriter, r *http.Request) *Diagram {
 	}
 
 	// Create a diagram from the description
-	d := NewDiagram([]byte(data))
+	d := NewDiagram([]byte(data), imgType)
 	return d
 }
 
-func getDiagramFromPOST(rw http.ResponseWriter, r *http.Request) *Diagram {
+func getDiagramFromPOST(rw http.ResponseWriter, r *http.Request, imgType string) *Diagram {
 	if r.Method != http.MethodPost {
 		writeErr(rw, fmt.Errorf("expected HTTP method POST"), http.StatusBadRequest)
 		return nil
@@ -76,7 +80,7 @@ func getDiagramFromPOST(rw http.ResponseWriter, r *http.Request) *Diagram {
 	}
 
 	// Create a diagram from the description
-	d := NewDiagram(bytes)
+	d := NewDiagram(bytes, imgType)
 	return d
 }
 
@@ -85,11 +89,21 @@ func generateHTTPHandler(generator Generator) func(rw http.ResponseWriter, r *ht
 	return func(rw http.ResponseWriter, r *http.Request) {
 		var diagram *Diagram
 
+		var imgType = r.URL.Query().Get("type")
+		if imgType == "" {
+			imgType = "svg"
+		}
+
+		if imgType != "png" && imgType != "svg" {
+			writeErr(rw, fmt.Errorf("unsupported image type (%s) use svg or png", imgType), http.StatusBadRequest)
+			return
+		}
+
 		switch r.Method {
 		case http.MethodGet:
-			diagram = getDiagramFromGET(rw, r)
+			diagram = getDiagramFromGET(rw, r, imgType)
 		case http.MethodPost:
-			diagram = getDiagramFromPOST(rw, r)
+			diagram = getDiagramFromPOST(rw, r, imgType)
 		default:
 			writeErr(rw, fmt.Errorf("unexpected HTTP method %s", r.Method), http.StatusBadRequest)
 			return
@@ -112,6 +126,6 @@ func generateHTTPHandler(generator Generator) func(rw http.ResponseWriter, r *ht
 			writeErr(rw, fmt.Errorf("could not read diagram bytes: %s", err), http.StatusInternalServerError)
 			return
 		}
-		writeSVG(rw, diagramBytes, http.StatusOK)
+		writeImage(rw, diagramBytes, http.StatusOK, imgType)
 	}
 }
