@@ -22,16 +22,20 @@ func writeJSON(rw http.ResponseWriter, value interface{}, status int) {
 	}
 }
 
-func writeImage(rw http.ResponseWriter, data []byte, status int, imgType string) {
-	if imgType == "png" {
+func writeImage(rw http.ResponseWriter, data []byte, status int, imgType string) error {
+	switch imgType {
+	case "png":
 		rw.Header().Set("Content-Type", "image/png")
-	} else {
+	case "svg":
 		rw.Header().Set("Content-Type", "image/svg+xml")
+	default:
+		return fmt.Errorf("unhandled image type: %s", imgType)
 	}
 	rw.WriteHeader(status)
 	if _, err := rw.Write(data); err != nil {
-		panic("could not write bytes to response: " + err.Error())
+		return fmt.Errorf("could not write image bytes: %w", err)
 	}
+	return nil
 }
 
 func writeErr(rw http.ResponseWriter, err error, status int) {
@@ -45,67 +49,70 @@ func writeErr(rw http.ResponseWriter, err error, status int) {
 // URLParam is the URL parameter getDiagramFromGET uses to look for data.
 const URLParam = "data"
 
-func getDiagramFromGET(rw http.ResponseWriter, r *http.Request, imgType string) *Diagram {
+func getDiagramFromGET(r *http.Request, imgType string) (*Diagram, error) {
 	if r.Method != http.MethodGet {
-		writeErr(rw, fmt.Errorf("expected HTTP method GET"), http.StatusBadRequest)
-		return nil
+		return nil, fmt.Errorf("expected HTTP method GET")
 	}
 
 	queryVal := strings.TrimSpace(r.URL.Query().Get(URLParam))
 	if queryVal == "" {
-		writeErr(rw, fmt.Errorf("missing data"), http.StatusBadRequest)
-		return nil
+		return nil, fmt.Errorf("missing data")
 	}
 	data, err := url.QueryUnescape(queryVal)
 	if err != nil {
-		writeErr(rw, fmt.Errorf("could not read query param: %s", err), http.StatusBadRequest)
-		return nil
+		return nil, fmt.Errorf("could not read query param: %s", err)
 	}
 
 	// Create a diagram from the description
 	d := NewDiagram([]byte(data), imgType)
-	return d
+	return d, nil
 }
 
-func getDiagramFromPOST(rw http.ResponseWriter, r *http.Request, imgType string) *Diagram {
+func getDiagramFromPOST(r *http.Request, imgType string) (*Diagram, error) {
 	if r.Method != http.MethodPost {
-		writeErr(rw, fmt.Errorf("expected HTTP method POST"), http.StatusBadRequest)
-		return nil
+		return nil, fmt.Errorf("expected HTTP method POST")
 	}
 	// Get description from request body
 	bytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		writeErr(rw, fmt.Errorf("could not read body: %s", err), http.StatusInternalServerError)
-		return nil
+		return nil, fmt.Errorf("could not read body: %s", err)
 	}
 
 	// Create a diagram from the description
 	d := NewDiagram(bytes, imgType)
-	return d
+	return d, nil
 }
+
+const URLParamImageType = "type"
 
 // generateHTTPHandler returns a HTTP handler used to generate a diagram.
 func generateHTTPHandler(generator Generator) func(rw http.ResponseWriter, r *http.Request) {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		var diagram *Diagram
 
-		var imgType = r.URL.Query().Get("type")
-		if imgType == "" {
-			imgType = "svg"
-		}
+		imgType := r.URL.Query().Get(URLParamImageType)
 
-		if imgType != "png" && imgType != "svg" {
+		switch imgType {
+		case "png", "svg":
+		case "":
+			imgType = "svg"
+		default:
 			writeErr(rw, fmt.Errorf("unsupported image type (%s) use svg or png", imgType), http.StatusBadRequest)
 			return
 		}
 
+		var err error
 		switch r.Method {
 		case http.MethodGet:
-			diagram = getDiagramFromGET(rw, r, imgType)
+			diagram, err = getDiagramFromGET(r, imgType)
 		case http.MethodPost:
-			diagram = getDiagramFromPOST(rw, r, imgType)
+			diagram, err = getDiagramFromPOST(r, imgType)
 		default:
 			writeErr(rw, fmt.Errorf("unexpected HTTP method %s", r.Method), http.StatusBadRequest)
+			return
+		}
+		if err != nil {
+			writeErr(rw, err, http.StatusBadRequest)
 			return
 		}
 		if diagram == nil {
@@ -126,6 +133,8 @@ func generateHTTPHandler(generator Generator) func(rw http.ResponseWriter, r *ht
 			writeErr(rw, fmt.Errorf("could not read diagram bytes: %s", err), http.StatusInternalServerError)
 			return
 		}
-		writeImage(rw, diagramBytes, http.StatusOK, imgType)
+		if err := writeImage(rw, diagramBytes, http.StatusOK, imgType); err != nil {
+			writeErr(rw, fmt.Errorf("could not write diagram: %w", err), http.StatusInternalServerError)
+		}
 	}
 }
