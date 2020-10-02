@@ -16,10 +16,7 @@ jobs:
       - name: Set env
         run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF:10}
       - name: Build
-        run: docker build \
-          -t tomwright/mermaid-server:latest \
-          -t tomwright/mermaid-server:${{ env.RELEASE_VERSION }} \
-          -f Dockerfile .
+        run: docker build -t tomwright/mermaid-server:latest -t tomwright/mermaid-server:${{ env.RELEASE_VERSION }} -f Dockerfile .
       - name: Login
         run: echo ${{ secrets.DOCKER_PASS }} | docker login -u${{ secrets.DOCKER_USER }} --password-stdin
       - name: Push
