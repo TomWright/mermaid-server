@@ -79,7 +79,7 @@ func (c cachingGenerator) generate(diagram *Diagram) error {
 	}
 
 	inPath := fmt.Sprintf("%s/%s.mmd", c.inPath, id)
-	outPath := fmt.Sprintf("%s/%s.svg", c.outPath, id)
+	outPath := fmt.Sprintf("%s/%s.%s", c.outPath, id, diagram.imgType)
 
 	if err := ioutil.WriteFile(inPath, diagram.description, 0644); err != nil {
 		return fmt.Errorf("could not write to input file [%s]: %w", inPath, err)

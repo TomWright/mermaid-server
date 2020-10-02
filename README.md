@@ -22,6 +22,8 @@ go run cmd/app/main.go --mermaid=./mermaidcli/node_modules/.bin/mmdc --in=./in -
 
 ### Diagram creation
 
+Use the query param 'type' to change between 'png' and 'svg' defaults to 'svg'.
+
 #### POST
 
 Send a CURL request to generate a diagram via `POST`:
