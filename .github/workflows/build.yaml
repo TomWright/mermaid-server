@@ -7,14 +7,14 @@ jobs:
   build:
     strategy:
       matrix:
-        go-version: [1.15.x]
+        go-version: [1.16.x]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2.3.4
       - name: Set env
-        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF:10}
+        run: echo RELEASE_VERSION=${GITHUB_REF:10} >> $GITHUB_ENV
       - name: Build
         run: docker build -t tomwright/mermaid-server:latest -t tomwright/mermaid-server:${{ env.RELEASE_VERSION }} -f Dockerfile .
       - name: Login
