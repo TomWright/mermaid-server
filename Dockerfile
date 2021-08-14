@@ -64,6 +64,7 @@ RUN apt-get update 2>/dev/null && \
         lsb-release \
         xdg-utils \
         wget \
+        libxshmfence1 \
 		2>/dev/null
 
 COPY --from=go /root/bin/app ./app
