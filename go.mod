@@ -2,4 +2,7 @@ module github.com/tomwright/mermaid-server
 
 go 1.15
 
-require github.com/tomwright/lifetime v1.0.1
+require (
+	github.com/tomwright/grace v0.1.2
+	github.com/tomwright/gracehttpserverrunner v0.1.0
+)

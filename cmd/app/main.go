@@ -4,7 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/tomwright/lifetime"
+	"github.com/tomwright/grace"
 	"github.com/tomwright/mermaid-server/internal"
 	"os"
 )
@@ -31,19 +31,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	g := grace.Init(context.Background())
+
 	cache := internal.NewDiagramCache()
 	generator := internal.NewGenerator(cache, *mermaid, *in, *out, *puppeteer)
 
-	httpService := internal.NewHTTPService(generator)
-	cleanupService := internal.NewCleanupService(generator)
+	httpRunner := internal.NewHTTPRunner(generator)
+	cleanupRunner := internal.NewCleanupRunner(generator)
 
-	lt := lifetime.New(context.Background()).Init()
+	g.Run(httpRunner)
+	g.Run(cleanupRunner)
 
-	// Start the http service.
-	lt.Start(httpService)
-	// Start the cleanup service.
-	lt.Start(cleanupService)
-
-	// Wait for all routines to stop running.
-	lt.Wait()
+	g.Wait()
 }

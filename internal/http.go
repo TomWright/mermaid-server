@@ -3,12 +3,31 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/tomwright/grace"
+	"github.com/tomwright/gracehttpserverrunner"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
+
+// NewHTTPRunner returns a grace runner that runs a HTTP server.
+func NewHTTPRunner(generator Generator) grace.Runner {
+	httpHandler := generateHTTPHandler(generator)
+
+	r := http.NewServeMux()
+	r.Handle("/generate", http.HandlerFunc(httpHandler))
+
+	return &gracehttpserverrunner.HTTPServerRunner{
+		Server: &http.Server{
+			Addr:    ":80",
+			Handler: r,
+		},
+		ShutdownTimeout: time.Second * 5,
+	}
+}
 
 func writeJSON(rw http.ResponseWriter, value interface{}, status int) {
 	bytes, err := json.Marshal(value)
