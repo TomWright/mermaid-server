@@ -1,5 +1,5 @@
 # This stage builds the go executable.
-FROM golang:1.15-buster as go
+FROM golang:1.16.6-buster as go
 
 WORKDIR /root
 COPY ./ ./
@@ -10,7 +10,7 @@ RUN go build -o bin/app cmd/app/main.go
 # Final stage that will be pushed.
 FROM debian:buster-slim
 
-FROM node:12.12.0-buster-slim as node
+FROM node:16.5.0-buster-slim as node
 
 WORKDIR /root
 
@@ -64,6 +64,7 @@ RUN apt-get update 2>/dev/null && \
         lsb-release \
         xdg-utils \
         wget \
+        libxshmfence1 \
 		2>/dev/null
 
 COPY --from=go /root/bin/app ./app
