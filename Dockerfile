@@ -1,5 +1,5 @@
 # This stage builds the go executable.
-FROM golang:1.18.0-buster as go
+FROM golang:1.18.3-buster as go
 
 WORKDIR /root
 COPY ./ ./
