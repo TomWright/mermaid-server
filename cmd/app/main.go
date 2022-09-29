@@ -14,6 +14,7 @@ func main() {
 	in := flag.String("in", "", "Directory to store input files.")
 	out := flag.String("out", "", "Directory to store output files.")
 	puppeteer := flag.String("puppeteer", "", "Full path to optional puppeteer config.")
+	allowAllOrigins := flag.Bool("allow-all-origins", false, "True to allow all request origins")
 	flag.Parse()
 
 	if *mermaid == "" {
@@ -36,7 +37,7 @@ func main() {
 	cache := internal.NewDiagramCache()
 	generator := internal.NewGenerator(cache, *mermaid, *in, *out, *puppeteer)
 
-	httpRunner := internal.NewHTTPRunner(generator)
+	httpRunner := internal.NewHTTPRunner(generator, *allowAllOrigins)
 	cleanupRunner := internal.NewCleanupRunner(generator)
 
 	g.Run(httpRunner)

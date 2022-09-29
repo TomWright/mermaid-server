@@ -74,5 +74,5 @@ RUN mkdir -p ./out
 RUN chmod 0777 ./in
 RUN chmod 0777 ./out
 
-CMD ["./app", "--mermaid=./node_modules/.bin/mmdc", "--in=./in", "--out=./out", "--puppeteer=./puppeteer-config.json"]
+CMD ["./app", "--mermaid=./node_modules/.bin/mmdc", "--in=./in", "--out=./out", "--puppeteer=./puppeteer-config.json", "--allow-all-origins=true"]
 
