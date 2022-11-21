@@ -10,7 +10,7 @@ RUN go build -o bin/app cmd/app/main.go
 # Final stage that will be pushed.
 FROM debian:buster-slim
 
-FROM node:18.10.0-buster-slim as node
+FROM node:19.1.0-buster-slim as node
 
 WORKDIR /root
 
