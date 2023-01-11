@@ -17,7 +17,7 @@ WORKDIR /root
 # copy the mermaidcli node package into the container and install
 COPY ./mermaidcli/* ./
 
-RUN npm install
+RUN npm install && npm cache clean --force;
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update 2>/dev/null && \
@@ -65,7 +65,7 @@ RUN apt-get update 2>/dev/null && \
         xdg-utils \
         wget \
         libxshmfence1 \
-		2>/dev/null
+		2>/dev/null && rm -rf /var/lib/apt/lists/*;
 
 COPY --from=go /root/bin/app ./app
 
