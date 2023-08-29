@@ -1,6 +1,6 @@
 module github.com/tomwright/mermaid-server
 
-go 1.15
+go 1.21
 
 require (
 	github.com/tomwright/grace v0.1.2
