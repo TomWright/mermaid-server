@@ -10,7 +10,7 @@ While this currently serves the diagrams via HTTP, it could easily be manipulate
 
 Run the container:
 ```
-docker run -d --name mermaid-server -p 80:80 tomwright/mermaid-server:latest --allow-all-origins=true
+docker run -d --name mermaid-server -p 80:80 tomwright/mermaid-server:latest
 ```
 
 ### Manually as a go command
