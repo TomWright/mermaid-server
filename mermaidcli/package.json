@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@mermaid-js/mermaid-cli": "^9.1.7"
+    "@mermaid-js/mermaid-cli": "^10.3.1"
   }
 }
